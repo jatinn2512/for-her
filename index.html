@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Line without hook - For her</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: #fdfdfd;
+        overflow: hidden;
+        font-family: "Comic Sans MS", sans-serif;
+        cursor: pointer;
+      }
+
+      .heart {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        background: pink;
+        transform: rotate(45deg);
+        opacity: 0.25;
+        border-radius: 50% 50% 0 0;
+      }
+
+      .heart::before,
+      .heart::after {
+        content: "";
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        background: pink;
+        border-radius: 50%;
+      }
+
+      .heart::before {
+        top: -15px;
+        left: 0;
+      }
+
+      .heart::after {
+        left: -15px;
+        top: 0;
+      }
+
+      @keyframes floatTopToBottom {
+        0% {
+          top: -10%;
+        }
+        100% {
+          top: 110%;
+        }
+      }
+
+      @keyframes floatLeftToRight {
+        0% {
+          left: -10%;
+        }
+        100% {
+          left: 110%;
+        }
+      }
+
+      @keyframes floatRightToLeft {
+        0% {
+          left: 110%;
+        }
+        100% {
+          left: -10%;
+        }
+      }
+
+      @keyframes floatBottomToTop {
+        0% {
+          top: 110%;
+        }
+        100% {
+          top: -10%;
+        }
+      }
+
+      .lyrics-container {
+        position: absolute;
+        top: 30%;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 25px;
+        background: #ffeef3;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 80%;
+        text-align: center;
+        font-size: 1.5rem;
+        line-height: 2.2rem;
+        animation: floatBox 4s ease-in-out infinite;
+      }
+
+      @keyframes floatBox {
+        0%,
+        100% {
+          transform: translate(-50%, 0px);
+        }
+        50% {
+          transform: translate(-50%, -10px);
+        }
+      }
+
+      #lyricsText {
+        display: inline-block;
+        white-space: pre-wrap;
+        overflow: hidden;
+        border-right: 2px solid #ff4f8b;
+      }
+
+      #overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #fff6f9;
+        color: #ff4f8b;
+        font-size: 2rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 999;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="overlay">
+      <div style="font-size: 2.5rem; font-weight: bold; text-align: center">
+        <i>For my cutiee</i>
+      </div>
+      <div style="font-size: 1.5rem; text-align: center">tap to play ❤️</div>
+    </div>
+
+    <!-- Floating Hearts -->
+    <script>
+      const directions = [
+        "floatTopToBottom",
+        "floatLeftToRight",
+        "floatRightToLeft",
+        "floatBottomToTop",
+      ];
+      for (let i = 0; i < 20; i++) {
+        const heart = document.createElement("div");
+        heart.className = "heart";
+        const dir = directions[i % 4];
+        heart.style.top = `${Math.random() * 100}%`;
+        heart.style.left = `${Math.random() * 100}%`;
+        heart.style.animation = `${dir} ${8 + Math.random() * 5}s linear infinite`;
+        document.body.appendChild(heart);
+      }
+    </script>
+
+    <div class="lyrics-container">
+      <span id="lyricsText"></span>
+    </div>
+
+    <audio id="bgSong" preload="auto">
+      <source src="Ricky Montgomery - line without a hook (lyrics).mp3" type="audio/mpeg" />
+      Your browser does not support the audio element.
+    </audio>
+
+    <script>
+      const lyrics = [
+        { time: 178, text: `"Cause there is something, and there is nothing` },
+        { time: 182, text: `There is nothing in between` },
+        { time: 185, text: `And in my eyes, there is a tiny dancer` },
+        { time: 190, text: `Watching over me, he's singing` },
+        { time: 194, text: `"She's a, she's a lady, and I am just a boy, He's singing,"` },
+        { time: 201, text: `"She's a, she's a lady, and I am just a line without a hook"` },
+        { time: 209, text: `Oh, baby, I am a wreck when I'm without you` },
+        { time: 214, text: `I need you here to stay` },
+      ];
+
+      const target = document.getElementById("lyricsText");
+      const song = document.getElementById("bgSong");
+
+      let currentLyricIndex = 0;
+      let typingInProgress = false;
+      let paused = false;
+
+      function typeWriter(text) {
+        return new Promise((resolve) => {
+          target.innerHTML = "";
+          let i = 0;
+          const speed = 100;
+
+          function typing() {
+            if (paused) {
+              setTimeout(typing, speed);
+              return;
+            }
+            if (i < text.length) {
+              target.innerHTML += text.charAt(i);
+              i++;
+              setTimeout(typing, speed);
+            } else {
+              resolve();
+            }
+          }
+          typing();
+        });
+      }
+
+      song.addEventListener("play", () => {
+        const interval = setInterval(async () => {
+          const currentTime = song.currentTime;
+
+          if (
+            currentLyricIndex < lyrics.length &&
+            currentTime >= lyrics[currentLyricIndex].time &&
+            !typingInProgress
+          ) {
+            typingInProgress = true;
+            await typeWriter(lyrics[currentLyricIndex].text);
+            currentLyricIndex++;
+            typingInProgress = false;
+          }
+
+          if (currentTime >= 218) {
+            clearInterval(interval);
+            song.pause();
+            song.currentTime = 0;
+          }
+        }, 100);
+      });
+
+      document.getElementById("overlay").addEventListener("click", () => {
+        song.currentTime = 178;
+        song.play();
+        document.getElementById("overlay").style.display = "none";
+      });
+
+      document.body.addEventListener("click", () => {
+        // Ignore if overlay is still showing
+        if (document.getElementById("overlay").style.display !== "none") return;
+
+        if (!paused) {
+          song.pause();
+          paused = true;
+        } else {
+          song.play();
+          paused = false;
+        }
+      });
+    </script>
+  </body>
+</html>
