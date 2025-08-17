@@ -139,7 +139,6 @@
       <div style="font-size: 1.5rem; text-align: center">tap to play ❤️</div>
     </div>
 
-    <!-- Floating Hearts -->
     <script>
       const directions = [
         "floatTopToBottom",
@@ -239,7 +238,7 @@
       });
 
       document.body.addEventListener("click", () => {
-        // Ignore if overlay is still showing
+        
         if (document.getElementById("overlay").style.display !== "none") return;
 
         if (!paused) {
